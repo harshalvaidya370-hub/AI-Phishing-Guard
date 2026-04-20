@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<title>AI PhishGuard Cybersecurity Platform</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+body{
+background:black;
+color:white;
+font-family:Arial;
+overflow-x:hidden;
+}
+
+.section{
+margin-top:50px;
+}
+
+.container-box{
+background:rgba(255,255,255,0.05);
+padding:40px;
+border-radius:20px;
+border:1px solid cyan;
+box-shadow:0 0 30px cyan;
+backdrop-filter:blur(10px);
+}
+
+.title{
+font-size:40px;
+text-align:center;
+color:#00ffe5;
+text-shadow:0 0 20px #00ffe5;
+margin-bottom:20px;
+}
+
+/* MATRIX */
+
+#matrix{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:-1;
+}
+
+/* THREAT METER */
+
+.meter{
+height:10px;
+background:#222;
+border-radius:10px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.meter span{
+display:block;
+height:100%;
+background:linear-gradient(90deg,#ff512f,#dd2476);
+width:{{score|default(0)}}%;
+}
+
+/* ALERT */
+
+.alert-overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.9);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+.alert-box{
+background:red;
+padding:60px;
+font-size:32px;
+border-radius:20px;
+box-shadow:0 0 40px red;
+}
+
+/* CHAT */
+
+.chat-box{
+background:black;
+padding:20px;
+border-radius:10px;
+border:1px solid cyan;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div class="container mt-5">
+
+<div class="title">
+AI PhishGuard Cybersecurity Platform
+</div>
+
+
+<!-- URL SCANNER -->
+
+<div class="container-box section">
+
+<h3>🔍 AI Phishing URL Scanner</h3>
+
+<form method="POST">
+
+<input class="form-control mb-3" name="url" placeholder="Enter suspicious URL">
+
+<button class="btn btn-info w-100">Scan Website</button>
+
+</form>
+
+{% if result %}
+
+<h4 class="mt-4">{{result}}</h4>
+
+<div class="meter">
+<span></span>
+</div>
+
+<p>Threat Score : {{score}}%</p>
+
+<h5>Threat Intelligence</h5>
+
+<ul>
+
+{% for item in indicators %}
+<li>{{item}}</li>
+{% endfor %}
+
+</ul>
+
+<p><b>AI Advice:</b> {{advice}}</p>
+
+{% endif %}
+
+</div>
+
+
+<!-- CYBER ATTACK MONITOR -->
+
+<div class="container-box section">
+
+<h3>🌍 Global Cyber Attack Monitor</h3>
+
+<h4 id="attackCount">Attacks detected: 0</h4>
+
+</div>
+
+
+<!-- AI CHAT -->
+
+<div class="container-box section">
+
+<h3>🤖 AI Security Assistant</h3>
+
+<div class="chat-box">
+
+<input id="chatInput" class="form-control" placeholder="Ask about phishing or security">
+
+<button onclick="sendChat()" class="btn btn-primary mt-2">Ask AI</button>
+
+<p id="chatReply"></p>
+
+</div>
+
+</div>
+
+
+<!-- EMAIL ANALYZER -->
+
+<div class="container-box section">
+
+<h3>📧 Phishing Email Analyzer</h3>
+
+<textarea id="emailText" class="form-control" rows="4"
+placeholder="Paste suspicious email text"></textarea>
+
+<button onclick="scanEmail()" class="btn btn-warning mt-2">
+Analyze Email
+</button>
+
+<h4 id="emailResult"></h4>
+
+</div>
+
+</div>
+
+
+<!-- ALERT -->
+
+<div id="alertOverlay" class="alert-overlay">
+
+<div class="alert-box">
+
+⚠ PHISHING THREAT DETECTED  
+<br>
+Do NOT interact with this website
+
+</div>
+
+</div>
+
+
+1<script>
+
+/* MATRIX BACKGROUND */
+
+var canvas=document.getElementById("matrix");
+var ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight
+
+var letters="01".split("")
+var fontSize=14
+var columns=canvas.width/fontSize
+
+var drops=[]
+
+for(var x=0;x<columns;x++) drops[x]=1
+
+function draw(){
+
+ctx.fillStyle="rgba(0,0,0,0.05)"
+ctx.fillRect(0,0,canvas.width,canvas.height)
+
+ctx.fillStyle="#0f0"
+ctx.font=fontSize+"px monospace"
+
+for(var i=0;i<drops.length;i++){
+
+var text=letters[Math.floor(Math.random()*letters.length)]
+
+ctx.fillText(text,i*fontSize,drops[i]*fontSize)
+
+if(drops[i]*fontSize>canvas.height && Math.random()>0.975){
+
+drops[i]=0
+
+}
+
+drops[i]++
+
+}
+
+}
+
+setInterval(draw,33)
+
+
+/* CYBER ATTACK COUNTER */
+
+let attack=0
+
+setInterval(()=>{
+
+attack+=Math.floor(Math.random()*5)
+
+document.getElementById("attackCount").innerText=
+"Attacks detected: "+attack
+
+},2000)
+
+
+/* CHATBOT */
+
+function sendChat(){
+
+fetch("/chat",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+
+body:"message="+document.getElementById("chatInput").value
+
+})
+
+.then(res=>res.json())
+.then(data=>{
+
+document.getElementById("chatReply").innerText=data.reply
+
+})
+
+}
+
+
+/* EMAIL ANALYZER */
+
+function scanEmail(){
+
+fetch("/email",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+
+body:"email="+document.getElementById("emailText").value
+
+})
+
+.then(res=>res.json())
+.then(data=>{
+
+document.getElementById("emailResult").innerText=data.result
+
+})
+
+}
+
+
+/* PHISHING ALERT */
+
+var result="{{result|default('')}}"
+
+if(result.toLowerCase().includes("phishing")){
+
+document.getElementById("alertOverlay").style.display="flex"
+
+}
+
+</script>
+
+</body>
+</html>
